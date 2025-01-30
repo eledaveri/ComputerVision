@@ -101,7 +101,7 @@ It's optional to download these checkpoints via huggingface CLI. You may directl
       - <code>scripts/recog_evaluation/*.sh</code>: evaluate GeneralPoints recognition
     - Please modify <code>CKPT_NAME</code> in these shell scripts.
 
-\*\* Note that our shell scripts support slurm clusters if launched via <code>sbatch scripts/*/*.sh</code>. Reproducing our training experiments require a node of 8 gpus with memory of 80GB each. 
+\*\* Note that our shell scripts support slurm clusters if launched via <code>sbatch scripts/\*/\*.sh</code>. Reproducing our training experiments require a node of 8 gpus with memory of 80GB each. 
 ## Citation
 
 If you find this project useful for your research and applications, please cite using this BibTeX:
