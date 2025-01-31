@@ -15,8 +15,8 @@
 <a href="https://tianzhechu.com/SFTvsRL/" target="_blank">
     <img alt="Website" src="https://img.shields.io/badge/🌎_Website-tianzhechu.com/SFTvsRL-blue.svg" height="25" />
 </a>
-<a href="https://huggingface.co/collections/tianzhechu/sftvsrl-models-and-data-6797ba6de522c7de7fcb80bah" target="_blank">
-    <img alt="HF Model: Cambrian-1" src="https://img.shields.io/badge/%F0%9F%A4%97%20_Model-Checkpoints&Data-ffc107?color=ffc107&logoColor=white" height="25" />
+<a href="https://huggingface.co/datasets/tianzhechu/SFTvsRL_Data" target="_blank">
+    <img alt="HF Checkpoints" src="https://img.shields.io/badge/%F0%9F%A4%97%20_Model-Checkpoints&Data-ffc107?color=ffc107&logoColor=white" height="25" />
 </a>
 
 
