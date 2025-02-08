@@ -15,8 +15,8 @@
 <a href="https://tianzhechu.com/SFTvsRL/" target="_blank">
     <img alt="Website" src="https://img.shields.io/badge/🌎_Website-tianzhechu.com/SFTvsRL-blue.svg" height="25" />
 </a>
-<a href="https://huggingface.co/collections/tianzhechu/sftvsrl-models-and-data-6797ba6de522c7de7fcb80ba" target="_blank">
-    <img alt="HF Checkpoints" src="https://img.shields.io/badge/%F0%9F%A4%97%20_Model-Checkpoints&Data-ffc107?color=ffc107&logoColor=white" height="25" />
+<a href="https://huggingface.co/collections/tianzhechu/sftvsrl-models-and-data-6797ba6de522c7de7fcb80bah" target="_blank">
+    <img alt="HF Model: Cambrian-1" src="https://img.shields.io/badge/%F0%9F%A4%97%20_Model-Checkpoints&Data-ffc107?color=ffc107&logoColor=white" height="25" />
 </a>
 
 
@@ -77,7 +77,7 @@ It's optional to download these checkpoints via huggingface CLI. You may directl
 
 1. Install packages and prepare the initial checkpoints (optional).
    - Check [here](https://huggingface.co/collections/tianzhechu/sftvsrl-models-and-data-6797ba6de522c7de7fcb80ba) to download initial checkpoints for all 4 training experiments.
-   - You may train your own initial checkpoints. We will release data and SFT scripts soon.
+   - You may train your own initial checkpoints following [instructions here](sft/README.md).
    - We use [Llama-3.2-Vision-Instruct](https://huggingface.co/meta-llama/Llama-3.2-11B-Vision-Instruct) for all our experiments. Other models might not need SFT initialization and welcome to explore~
 2. Launch RL experiments (PPO).
    - For GeneralPoints, please use execute the following scripts:
