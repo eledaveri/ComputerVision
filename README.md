@@ -39,7 +39,7 @@
 > *Misc: We prompt DALL-E 3 via "Conceptual figure of 'SFT Memorizes, RL Generalizes', with trendlines and style of Hong Kong" but somehow skycrapters dominate the picture...*
 
 ## Release
-- [02/8/25] We add [SFT scripts](sft/) and text-only [SFT data](https://huggingface.co/datasets/tianzhechu/SFTvsRL_Data). Keep updating in the future.
+- [02/8/25] We add [SFT scripts](sft/) and text-only [SFT data](https://huggingface.co/datasets/tianzhechu/SFTvsRL_Data). Still updating~
 - [01/28/25] Excited to shout out our paper *SFT Memorizes, RL Generalizes*! We release the environments, training scripts, evaluation scripts, SFT data, and initial checkpoints.
 
 ## Installation
