@@ -217,46 +217,6 @@ class GeneralPointEnv_oneline(gym.Env):
         return self._get_observation(), reward, terminated, False, info
         
         
-        # if action == 0:
-        #     if len(self.formula) > 0:
-        #         # need to delete the last action, and if it was a number, add it back to the remaining numbers
-        #         last_action = self.formula[-1]
-        #         if last_action in self.allowed_numbers:
-        #             self.remaining_nums.append(last_action)
-        #             self.used_cards.remove(last_action)
-        #         self.formula = self.formula[:-1] # delete the last action
-        #     else:
-        #         reward = -1 # negative reward for deleting an empty formula
-        #     chosen_action = 'delete'
-
-        # elif action < len(self.allowed_numbers) + 1:
-        #     chosen_action = self.allowed_numbers[action - 1] # -1 index to account for delete action
-        # else:
-        #     chosen_action = OPERATOR_ACTIONS[action - len(self.allowed_numbers) - 1] # -1 index to account for delete action
-        # ## terminate first if the formula is too long.
-        # if self.remaining_step == 0:
-        #     return self._terminate_step(-1, 'step_limit_reached', is_truncated=True)
-
-        # if not self._is_valid_action(chosen_action):
-        #     ## return the original state with a negative reward
-        #     info = {"Cards": self.cards, "Plain Cards": self.cards_without_suit,
-        #         "Numbers": self.cards_num, "Formula": self.formula,
-        #         "Solution": self.solution, "Remaining Numbers": self.remaining_nums,
-        #         "Remaining Step": self.remaining_step}
-        #     return self._get_observation(), -1, False, False, info
-        # elif chosen_action in self.allowed_numbers:
-        #     self.used_cards.append(chosen_action)
-        #     self.remaining_nums.remove(chosen_action)
-        # if chosen_action == '=':
-        #     return self._evaluate_formula()
-        # elif chosen_action != 'delete':
-        #     self.formula.append(chosen_action) # append the action to the formula if not delete
-
-        # info = {"Cards": self.cards, "Plain Cards": self.cards_without_suit,
-        #         "Numbers": self.cards_num, "Formula": self.formula,
-        #         "Solution": self.solution, "Remaining Numbers": self.remaining_nums,
-        #         "Remaining Step": self.remaining_step}
-        # return self._get_observation(), reward, terminated, False, info
 
     def _generate_cards(self):
         if not self.ood:
@@ -294,22 +254,6 @@ class GeneralPointEnv_oneline(gym.Env):
             is_valid = not any(new_used_cards.count(x) > self.cards_num.count(x) for x in new_used_cards)
             return is_valid
 
-    # def _evaluate_formula(self):
-    #     try:
-    #         formula_str = ''.join(map(str, self.formula))
-    #         reward = 10 if eval(formula_str) == self.target_points else -1
-    #     except Exception:
-    #         # The formula is invalid
-    #         reward = -1
-    #     finally:
-    #         if len(self.used_cards) != 4:
-    #             # Not all cards are used.
-    #             reward = -1
-    #     info = {"Cards": self.cards, "Plain Cards": self.cards_without_suit,
-    #             "Numbers": self.cards_num, "Formula": self.formula,
-    #             "Solution": self.solution, "Remaining Numbers": self.remaining_nums,
-    #             "Remaining Step": self.remaining_step}
-    #     return self._get_observation(), reward, True, False, info
 
     def _terminate_step(self, reward, info_key, is_truncated=False):
         info = {"Cards": self.cards, "Plain Cards": self.cards_without_suit,
