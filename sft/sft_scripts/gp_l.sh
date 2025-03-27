@@ -13,8 +13,8 @@
 #SBATCH --output=sft_%A_%a.err
 #SBATCH --partition=gpu
 export PYTHONPATH=src:$PYTHONPATH
-MODEL_NAME="meta-llama/Llama-3.2-11B-Vision-Instruct"
-DATA_JSON="YOUR_JSON_DATA_PATH"
+MODEL_NAME="HuggingFaceTB/SmolVLM-256M-Instruct"
+DATA_JSON="SFTvsRL_DATA_new/SFT_Data/gp-l/data.json"
 IMAGE_FOLDER="./"
 OUTPUT_FOLDER="../train_ckpt/gp_l_sft"
 

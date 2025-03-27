@@ -21,9 +21,9 @@ CKPT_NAME="HuggingFaceTB/SmolVLM-256M-Instruct" # official init model: tianzhech
 PORT=$((RANDOM % 10000 + 1000))
 
 # download from our huggingface dataset repo tianzhechu/SFTvsRL_Data
-ROUTE_INFO="YOUR_ROUTE_INFO_PATH" # .json
-GPS_TO_PANO="YOUR_GPS_TO_PANO_MAPPING_PATH" # .pkl
-STREETVIEWS="YOUR_STREETVIEWS_PATH" # folder of images
+ROUTE_INFO="SFTvsRL_DATA_new/VIRL_routes/nyc_1k_routes/route_infos.json" # .json
+GPS_TO_PANO="SFTvsRL_DATA_new/VIRL_routes/nyc_1k_routes/gps_pano_mapping.pkl" # .pkl
+STREETVIEWS="SFTvsRL_DATA_new/VIRL_routes/nyc_1k_routes/street_views" # folder of images
 
 DS_SKIP_CUDA_CHECK=1 TOKENIZERS_PARALLELISM=false \
     accelerate launch \
