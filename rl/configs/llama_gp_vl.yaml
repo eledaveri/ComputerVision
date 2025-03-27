@@ -33,10 +33,10 @@ env_config:
   face_cards_color: "black"
   verify_iter: 5
 
-model: llama
-model_path: ""
+model: SmolVLM      #llama
+model_path: "HuggingFaceTB/SmolVLM-256M-Instruct"
 prompt_config:
-  use_vision: true
+  use_vision: true  #questi 2 campi servono per attivare visione e/o linguaggio (modello multimodale)
   use_language: false
   enable_verification: true
   prompt_vision: ["Q_GeneralPoint_EQN_VL"]
