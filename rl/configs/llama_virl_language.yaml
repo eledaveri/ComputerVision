@@ -81,8 +81,8 @@ env_config:
       place_info_path: None
   platform_save_dir: "./logs/"
 
-model: llama
-model_path: ""
+model: SmolVLM
+model_path: "HuggingFaceTB/SmolVLM-256M-Instruct"
 prompt_config:
   use_language: true
   use_vision: false
