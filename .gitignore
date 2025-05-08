@@ -21,3 +21,9 @@ data/
 slurm_logs/
 
 output/
+SFTvsRL_DATA/VIRL_routes/VLN_mini.zip
+SFTvsRL_DATA/VIRL_routes/nyc_1k_routes.zip
+.gitignore
+SFTvsRL_DATA/.gitattributes
+scripts/config_zero2_8gpu_old.yaml
+SFTvsRL_DATA/README.md
