@@ -41,7 +41,6 @@ prompt_config:
   enable_verification: true
   prompt_vision: ["Q_GeneralPoint_EQN_VL"]
   pattern_vision: ["formula"]
-
 generation_config:
   temperature: 0.2
   max_tokens: 300 # not used

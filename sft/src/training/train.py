@@ -3,7 +3,7 @@ import torch
 import transformers
 from peft import LoraConfig, get_peft_model
 import ast
-from transformers import AutoProcessor, BitsAndBytesConfig, MllamaForConditionalGeneration
+from transformers import AutoProcessor, BitsAndBytesConfig, MllamaForConditionalGeneration, AutoModelForVision2Seq
 from training.trainer import LLamaVTrainer
 from training.data import make_supervised_data_module
 from training.params import DataArguments, ModelArguments, TrainingArguments
@@ -40,8 +40,65 @@ def find_target_linear_names(model, num_lora_modules=-1, lora_namespan_exclude=[
 def set_requires_grad(parameters, requires_grad):
     for p in parameters:
         p.requires_grad = requires_grad
-
+        
 def configure_vision_tower(model, training_args, compute_dtype, device):
+    # Per gestire diversi tipi di modelli, incluso Idefics3ForConditionalGeneration
+    if hasattr(model, 'vision_model'):
+        vision_tower = model.vision_model
+    elif hasattr(model, 'vision_encoder'):
+        vision_tower = model.vision_encoder
+    elif hasattr(model, 'vision_tower'):
+        vision_tower = model.vision_tower
+    else:
+        # Cerchiamo di trovare un componente visivo
+        potential_vision_attrs = []
+        for name, module in model.named_children():
+            if any(vision_key in name.lower() for vision_key in ['vision', 'img', 'image']):
+                potential_vision_attrs.append((name, module))
+        
+        if potential_vision_attrs:
+            # Usa il primo componente trovato che sembra essere legato alla visione
+            vision_attr_name, vision_tower = potential_vision_attrs[0]
+            print(f"Utilizzando {vision_attr_name} come componente visivo")
+        else:
+            print(f"ERRORE: Non è stato possibile trovare il componente visivo in {type(model).__name__}")
+            return  # Esci dalla funzione se non riusciamo a trovare un componente visivo
+    
+    vision_tower.to(dtype=compute_dtype, device=device)
+    
+    # Gestione simile per il proiettore multimodale
+    if hasattr(model, 'multi_modal_projector'):
+        img_projection_params = model.multi_modal_projector.parameters()
+    elif hasattr(model, 'image_projector'):
+        img_projection_params = model.image_projector.parameters()
+    elif hasattr(model, 'visual_projection'):
+        img_projection_params = model.visual_projection.parameters()
+    else:
+        # Cerchiamo di trovare un componente proiettore
+        projector_attrs = []
+        for name, module in model.named_children():
+            if any(proj_key in name.lower() for proj_key in ['proj', 'embed', 'connector']):
+                if any(modal_key in name.lower() for modal_key in ['modal', 'img', 'vision', 'image']):
+                    projector_attrs.append((name, module))
+        
+        if projector_attrs:
+            proj_attr_name, projector = projector_attrs[0]
+            print(f"Utilizzando {proj_attr_name} come proiettore multimodale")
+            img_projection_params = projector.parameters()
+        else:
+            print(f"AVVISO: Non è stato possibile trovare il proiettore multimodale in {type(model).__name__}")
+            img_projection_params = []
+
+    set_requires_grad(img_projection_params, training_args.tune_img_projector)
+    
+    vision_model_params = vision_tower.parameters()
+    set_requires_grad(vision_model_params, not training_args.freeze_vision_tower)
+    
+    # Aggiorna il proiettore multimodale se trovato e se usiamo quantizzazione
+    if training_args.bits in [4, 8] and hasattr(model, 'multi_modal_projector'):
+        model.multi_modal_projector.to(dtype=compute_dtype, device=device)
+
+"""def configure_vision_tower(model, training_args, compute_dtype, device):
     vision_tower = model.vision_model
     vision_tower.to(dtype=compute_dtype, device=device)
 
@@ -56,6 +113,22 @@ def configure_vision_tower(model, training_args, compute_dtype, device):
 
 def configure_llm(model, training_args):
     llm_params = model.language_model.parameters()
+    set_requires_grad(llm_params, not training_args.freeze_llm)"""
+    
+def configure_llm(model, training_args):
+    # Per gestire diversi tipi di modelli, incluso Idefics3ForConditionalGeneration
+    if hasattr(model, 'language_model'):
+        llm_params = model.language_model.parameters()
+    elif hasattr(model, 'text_model'):
+        llm_params = model.text_model.parameters() 
+    elif hasattr(model, 'model'):
+        llm_params = model.model.parameters()
+    else:
+        # Se non troviamo gli attributi comuni, stampa un avviso e usa il modello intero
+        print(f"Avviso: Non è stato possibile trovare il modello linguistico specifico in {type(model).__name__}. Utilizzando tutti i parametri.")
+        llm_params = [p for n, p in model.named_parameters() 
+                    if 'vision_model' not in n and 'multi_modal_projector' not in n]
+    
     set_requires_grad(llm_params, not training_args.freeze_llm)
 
 def train():
@@ -102,14 +175,22 @@ def train():
             )
         ))
 
-    model = MllamaForConditionalGeneration.from_pretrained(
+    """model = MllamaForConditionalGeneration.from_pretrained(
         model_args.model_id,
         torch_dtype=compute_dtype,
         cache_dir=training_args.cache_dir, 
         attn_implementation="flash_attention_2" if not training_args.disable_flash_attn2 else "sdpa", 
         **bnb_model_from_pretrained_args
-    )
+    )"""
 
+    model = AutoModelForVision2Seq.from_pretrained(
+    model_args.model_id,
+    torch_dtype=compute_dtype,
+    cache_dir=training_args.cache_dir,
+    attn_implementation="flash_attention_2" if not training_args.disable_flash_attn2 else "eager",
+    **bnb_model_from_pretrained_args
+    ).to(training_args.device)
+    
     # I set a hidden size for temporary use. This is to use the deepspeed.
     # I will find a proper way later.
     model.config.hidden_size = model.config.text_config.hidden_size

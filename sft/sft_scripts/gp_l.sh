@@ -31,8 +31,9 @@ EPOCH=1
 # LR=5e-7
 # EPOCH=5
 
+
 deepspeed src/training/train.py \
-    --deepspeed sft_scripts/zero3_offload.json \
+    --deepspeed sft_scripts/deepspeed.json \
     --model_id $MODEL_NAME \
     --data_path $DATA_JSON \
     --image_folder $IMAGE_FOLDER \
@@ -53,7 +54,7 @@ deepspeed src/training/train.py \
     --warmup_ratio 0.03 \
     --lr_scheduler_type "cosine" \
     --logging_steps 1 \
-    --tf32 True \
+    --tf32 False \
     --gradient_checkpointing True \
     --report_to none \
     --lazy_preprocess True \
