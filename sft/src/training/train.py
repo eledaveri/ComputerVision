@@ -235,6 +235,7 @@ def train():
         **data_module
     )
 
+    #QUI AVVIENE LA SCELTA TRA RIPRENDERE DAL CHECKPOINT O INIZIARE DA ZERO
     if list(pathlib.Path(training_args.output_dir).glob("checkpoint-*")):
         trainer.train(resume_from_checkpoint=True)
     else:
