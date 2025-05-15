@@ -27,3 +27,6 @@ SFTvsRL_DATA/VIRL_routes/nyc_1k_routes.zip
 SFTvsRL_DATA/.gitattributes
 scripts/config_zero2_8gpu_old.yaml
 SFTvsRL_DATA/README.md
+start_project.sh
+sft/sft_scripts/gp_l.sh
+sft/sft_scripts/gp_l.sh

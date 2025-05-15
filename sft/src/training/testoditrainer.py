@@ -1184,7 +1184,7 @@ class Trainer:
 
         We provide a reasonable default that works well. If you want to use something else, you can pass a tuple in the
         Trainer's init through `optimizers`, or subclass and override this method (or `create_optimizer` and/or
-        `create_scheduler`) in a subclass.
+        `create_scheduler`) in a subclass. h
         """
         self.create_optimizer()
         if IS_SAGEMAKER_MP_POST_1_10 and smp.state.cfg.fp16:
@@ -2323,7 +2323,7 @@ class Trainer:
             self._created_lr_scheduler = False
 
         if self.is_deepspeed_enabled:
-            # self.optimizer, self.lr_scheduler = deepspeed_init(self, num_training_steps=max_steps)
+        #     self.optimizer, self.lr_scheduler = deepspeed_init(self, num_training_steps=max_steps)
             self.optimizer = torch.optim.AdamW(
                 self.model.parameters(),
                 lr=args.learning_rate,

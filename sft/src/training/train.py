@@ -3,7 +3,7 @@ import torch
 import transformers
 from peft import LoraConfig, get_peft_model
 import ast
-from transformers import AutoProcessor, BitsAndBytesConfig, MllamaForConditionalGeneration, AutoModelForVision2Seq
+from transformers import AutoProcessor, BitsAndBytesConfig, MllamaForConditionalGeneration, AutoModelForVision2Seq, Idefics3ForConditionalGeneration
 from training.trainer import LLamaVTrainer
 from training.data import make_supervised_data_module
 from training.params import DataArguments, ModelArguments, TrainingArguments
@@ -42,80 +42,39 @@ def set_requires_grad(parameters, requires_grad):
         p.requires_grad = requires_grad
         
 def configure_vision_tower(model, training_args, compute_dtype, device):
-    # Per gestire diversi tipi di modelli, incluso Idefics3ForConditionalGeneration
-    if hasattr(model, 'vision_model'):
-        vision_tower = model.vision_model
-    elif hasattr(model, 'vision_encoder'):
-        vision_tower = model.vision_encoder
-    elif hasattr(model, 'vision_tower'):
-        vision_tower = model.vision_tower
-    else:
-        # Cerchiamo di trovare un componente visivo
-        potential_vision_attrs = []
-        for name, module in model.named_children():
-            if any(vision_key in name.lower() for vision_key in ['vision', 'img', 'image']):
-                potential_vision_attrs.append((name, module))
+    print(f"DEBUG: Model type: {type(model).__name__}")
+    
+    if hasattr(model, 'model'):
+        base_model = model.model
+        print("DEBUG: Checking base model components:")
+        for name, module in base_model.named_children():
+            print(f"- {name}: {type(module).__name__}")
         
-        if potential_vision_attrs:
-            # Usa il primo componente trovato che sembra essere legato alla visione
-            vision_attr_name, vision_tower = potential_vision_attrs[0]
-            print(f"Utilizzando {vision_attr_name} come componente visivo")
+        if hasattr(base_model, 'vision_model'):
+            vision_tower = base_model.vision_model
+            print("Using vision_model from base model")
+        elif hasattr(base_model, 'vision_encoder'):
+            vision_tower = base_model.vision_encoder
+            print("Using vision_encoder from base model")
+        elif hasattr(base_model, 'vision_tower'):
+            vision_tower = base_model.vision_tower
+            print("Using vision_tower from base model")
+        elif hasattr(base_model, 'visual'):
+            vision_tower = base_model.visual
+            print("Using visual module from base model")
         else:
-            print(f"ERRORE: Non è stato possibile trovare il componente visivo in {type(model).__name__}")
-            return  # Esci dalla funzione se non riusciamo a trovare un componente visivo
-    
-    vision_tower.to(dtype=compute_dtype, device=device)
-    
-    # Gestione simile per il proiettore multimodale
-    if hasattr(model, 'multi_modal_projector'):
-        img_projection_params = model.multi_modal_projector.parameters()
-    elif hasattr(model, 'image_projector'):
-        img_projection_params = model.image_projector.parameters()
-    elif hasattr(model, 'visual_projection'):
-        img_projection_params = model.visual_projection.parameters()
+            raise ValueError(f"No vision component found in base model. Available components: {list(base_model.named_children())}")
     else:
-        # Cerchiamo di trovare un componente proiettore
-        projector_attrs = []
-        for name, module in model.named_children():
-            if any(proj_key in name.lower() for proj_key in ['proj', 'embed', 'connector']):
-                if any(modal_key in name.lower() for modal_key in ['modal', 'img', 'vision', 'image']):
-                    projector_attrs.append((name, module))
+        raise ValueError(f"Model does not have a base 'model' attribute. Available attributes: {dir(model)}")
+
+    if vision_tower is None:
+        raise ValueError("Vision tower is None after initialization")
         
-        if projector_attrs:
-            proj_attr_name, projector = projector_attrs[0]
-            print(f"Utilizzando {proj_attr_name} come proiettore multimodale")
-            img_projection_params = projector.parameters()
-        else:
-            print(f"AVVISO: Non è stato possibile trovare il proiettore multimodale in {type(model).__name__}")
-            img_projection_params = []
-
-    set_requires_grad(img_projection_params, training_args.tune_img_projector)
-    
-    vision_model_params = vision_tower.parameters()
-    set_requires_grad(vision_model_params, not training_args.freeze_vision_tower)
-    
-    # Aggiorna il proiettore multimodale se trovato e se usiamo quantizzazione
-    if training_args.bits in [4, 8] and hasattr(model, 'multi_modal_projector'):
-        model.multi_modal_projector.to(dtype=compute_dtype, device=device)
-
-"""def configure_vision_tower(model, training_args, compute_dtype, device):
-    vision_tower = model.vision_model
     vision_tower.to(dtype=compute_dtype, device=device)
-
-    img_projection_params = model.multi_modal_projector.parameters()
-    set_requires_grad(img_projection_params, training_args.tune_img_projector)
-
-    vision_model_params = vision_tower.parameters()
-    set_requires_grad(vision_model_params, not training_args.freeze_vision_tower)
-
-    if training_args.bits in [4, 8]:
-        model.multi_modal_projector.to(dtype=compute_dtype, device=device)
+    return vision_tower
 
 def configure_llm(model, training_args):
-    llm_params = model.language_model.parameters()
-    set_requires_grad(llm_params, not training_args.freeze_llm)"""
-    
-def configure_llm(model, training_args):
+    print("LOCALIZE: ENTERING configure_llm() in train.py")
     # Per gestire diversi tipi di modelli, incluso Idefics3ForConditionalGeneration
     if hasattr(model, 'language_model'):
         llm_params = model.language_model.parameters()
@@ -132,6 +91,7 @@ def configure_llm(model, training_args):
     set_requires_grad(llm_params, not training_args.freeze_llm)
 
 def train():
+    print("LOCALIZE: ENTERING train() in train.py")
     global local_rank
     import wandb
     os.environ["WANDB_PROJECT"] = "sft"
@@ -175,21 +135,29 @@ def train():
             )
         ))
 
-    """model = MllamaForConditionalGeneration.from_pretrained(
-        model_args.model_id,
-        torch_dtype=compute_dtype,
-        cache_dir=training_args.cache_dir, 
-        attn_implementation="flash_attention_2" if not training_args.disable_flash_attn2 else "sdpa", 
-        **bnb_model_from_pretrained_args
-    )"""
-
-    model = AutoModelForVision2Seq.from_pretrained(
-    model_args.model_id,
-    torch_dtype=compute_dtype,
-    cache_dir=training_args.cache_dir,
-    attn_implementation="flash_attention_2" if not training_args.disable_flash_attn2 else "eager",
-    **bnb_model_from_pretrained_args
-    ).to(training_args.device)
+    try:
+        print("Using SmolVLM model...")
+        model = AutoModelForVision2Seq.from_pretrained(
+            model_args.model_id,
+            torch_dtype=compute_dtype,
+            cache_dir=training_args.cache_dir,
+            attn_implementation="flash_attention_2" if not training_args.disable_flash_attn2 else "eager",
+            **bnb_model_from_pretrained_args
+        ).to(training_args.device)
+    except Exception as e:
+        print(f"Failed to load as SmolVLM: {e}")
+        print("Falling back to AutoModelForVision2Seq")
+        print("Loading SmolVLM-250M model...")
+        model = AutoModelForVision2Seq.from_pretrained(
+            model_args.model_id,
+            torch_dtype=compute_dtype,
+            cache_dir=training_args.cache_dir,
+            trust_remote_code=True,  # Important for SmolVLM
+            use_flash_attention_2=not training_args.disable_flash_attn2,
+            **bnb_model_from_pretrained_args
+        ).to(training_args.device)
+        print(f"Loaded model type: {type(model).__name__}")
+        print(f"Model architecture: {model.config.model_type}")
     
     # I set a hidden size for temporary use. This is to use the deepspeed.
     # I will find a proper way later.

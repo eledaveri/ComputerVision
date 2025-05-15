@@ -2,7 +2,9 @@ import os
 import torch
 import torch.nn as nn
 
-from transformers import Trainer
+# from transformers import Trainer
+
+from .custom_trainer import CustomTrainer as Trainer
 from transformers.trainer import (
     is_sagemaker_mp_enabled,
     get_parameter_names,
@@ -24,6 +26,7 @@ from transformers.modeling_utils import PreTrainedModel
 from peft import PeftModel
 from training.train_utils import get_peft_state_maybe_zero_3, get_peft_state_non_lora_maybe_zero_3
 
+
 def maybe_zero_3(param, ignore_status=False, name=None):
     from deepspeed import zero
     from deepspeed.runtime.zero.partition_parameters import ZeroParamStatus
@@ -39,12 +42,14 @@ def maybe_zero_3(param, ignore_status=False, name=None):
     return param
 
 class LLamaVTrainer(Trainer):
-
+    print("LOCALIZE: LLamaVTrainer in trainer.py")
     def __init__(self, *args, processor: Optional[ProcessorMixin] = None, **kwargs):
+        print("LOCALIZE: INIT LLamaVTrainer in trainer.py")
         super(LLamaVTrainer, self).__init__(*args, **kwargs)
         self.processor = processor
 
     def create_optimizer(self):
+        print("LOCALIZE: create_optimizer in trainer.py")
         """
         Setup the optimizer.
         We provide a reasonable default that works well. If you want to use something else, you can pass a tuple in the
@@ -104,6 +109,9 @@ class LLamaVTrainer(Trainer):
                 ]
 
             optimizer_cls, optimizer_kwargs = Trainer.get_optimizer_cls_and_kwargs(self.args)
+            print(f"optimizer_cls: {optimizer_cls}, optimizer_kwargs: {optimizer_kwargs}")
+            print("SUPERATO IL BREAK")
+          
 
             self.optimizer = optimizer_cls(optimizer_grouped_parameters, **optimizer_kwargs)
             if optimizer_cls.__name__ == "Adam8bit":
@@ -123,6 +131,7 @@ class LLamaVTrainer(Trainer):
         return self.optimizer
 
     def _save_checkpoint(self, model, trial, metrics=None):
+        print("LOCALIZE: _save_checkpoint() in trainer.py")
         if self.args.lora_enable:
             checkpoint_folder = f"{PREFIX_CHECKPOINT_DIR}-{self.state.global_step}"
 
@@ -175,9 +184,10 @@ class LLamaVTrainer(Trainer):
                 self._rotate_checkpoints(use_mtime=False, output_dir=run_dir)
 
         else:
-            super(LLamaVTrainer, self)._save_checkpoint(model, trial, metrics)
+            super(LLamaVTrainer, self)._save_checkpoint(model, trial)
 
     def _save(self, output_dir: Optional[str] = None, state_dict=None):
+            print("LOCALIZE: _save() in trainer.py")
             # If we are executing this function, we are the process zero, so we don't check for that.
             output_dir = output_dir if output_dir is not None else self.args.output_dir
             os.makedirs(output_dir, exist_ok=True)
