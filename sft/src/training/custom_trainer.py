@@ -19,11 +19,22 @@ import torch.nn as nn
 import time
 import os
 import contextlib
+import warnings
 import functools
 import shutil
 from typing import Optional, Dict, Union, Any, List, Iterator
 from torch.utils.data import DataLoader
 from transformers.trainer_pt_utils import get_model_param_count
+from transformers.trainer_pt_utils import reissue_pt_warnings
+
+TRAINING_ARGS_NAME = "training_args.bin"
+TRAINER_STATE_NAME = "trainer_state.json"
+OPTIMIZER_NAME = "optimizer.pt"
+SCALER_NAME = "scaler.pt"
+OPTIMIZER_NAME_BIN = "optimizer.bin"
+SCHEDULER_NAME = "scheduler.pt"
+FSDP_MODEL_NAME = "pytorch_model_fsdp"
+
 
 # Add our own skip_first_batches implementation
 def skip_first_batches(dataloader: DataLoader, num_batches: int) -> Iterator:
@@ -498,7 +509,7 @@ class CustomTrainer(Trainer):
 
         run_dir = self._get_output_dir(trial)
         checkpoints_sorted = self._sorted_checkpoints(use_mtime=False, output_dir=run_dir)
-
+        print("SHOULD SAVE 1:", self.args.should_save)
         # Delete the last checkpoint when save_total_limit=1 if it's different from the best checkpoint and process allowed to save.
         if self.args.should_save and self.state.best_model_checkpoint is not None and self.args.save_total_limit == 1:
             for checkpoint in checkpoints_sorted:
@@ -519,7 +530,9 @@ class CustomTrainer(Trainer):
         return TrainOutput(self.state.global_step, train_loss, metrics)
 
     def _save_optimizer_and_scheduler(self, output_dir):
+        print("LOCALIZE: _save_optimizer_and_scheduler() in CustomTrainer")
         if is_torch_xla_available():
+            print("SHOULD SAVE 2:", self.args.should_save)
             xm.rendezvous("saving_optimizer_states")
             if self.is_fsdp_xla_v1_enabled:
                 optm = {
@@ -556,6 +569,7 @@ class CustomTrainer(Trainer):
             save_fsdp_optimizer(
                 self.accelerator.state.fsdp_plugin, self.accelerator, self.optimizer, self.model, output_dir
             )
+            
         elif self.args.should_save:
             # Standard saving for optimizer
             torch.save(self.optimizer.state_dict(), os.path.join(output_dir, OPTIMIZER_NAME))
@@ -564,3 +578,4 @@ class CustomTrainer(Trainer):
             with warnings.catch_warnings(record=True) as caught_warnings:
                 torch.save(self.lr_scheduler.state_dict(), os.path.join(output_dir, SCHEDULER_NAME))
             reissue_pt_warnings(caught_warnings)
+    

@@ -132,8 +132,10 @@ class LLamaVTrainer(Trainer):
 
     def _save_checkpoint(self, model, trial, metrics=None):
         print("LOCALIZE: _save_checkpoint() in trainer.py")
+        print("LORA_ENABLE: ", self.args.lora_enable)
         if self.args.lora_enable:
             checkpoint_folder = f"{PREFIX_CHECKPOINT_DIR}-{self.state.global_step}"
+            print("checkpoint_folder: ", checkpoint_folder)
 
             if self.hp_search_backend is None and trial is None:
                 self.store_flos()
@@ -145,7 +147,7 @@ class LLamaVTrainer(Trainer):
 
             non_lora_weights = get_peft_state_non_lora_maybe_zero_3(self.model.named_parameters(), require_grad_only=False)
             torch.save(non_lora_weights, os.path.join(output_dir, "non_lora_state_dict.bin"))
-
+            print("save_only_,model: ", self.args.save_only_model)
             if not self.args.save_only_model:
                 # Save optimizer and scheduler
                 self._save_optimizer_and_scheduler(output_dir)

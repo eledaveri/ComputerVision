@@ -38,7 +38,7 @@ deepspeed src/training/train.py \
     --data_path $DATA_JSON \
     --image_folder $IMAGE_FOLDER \
     --disable_flash_attn2 True \
-    --lora_enable False \
+    --lora_enable True \
     --tune_img_projector True \
     --freeze_vision_tower False \
     --freeze_llm False \
@@ -62,4 +62,4 @@ deepspeed src/training/train.py \
     --save_steps 20 \
     --save_total_limit 20 \
     --dataloader_num_workers 4 \
-    --save_only_model True
+    --save_only_model False \
