@@ -21,7 +21,7 @@ CKPT_NAME="HuggingFaceTB/SmolVLM-256M-Instruct" # official init model: tianzhech
 PORT=$((RANDOM % 10000 + 1000))
 
 DS_SKIP_CUDA_CHECK=1 TOKENIZERS_PARALLELISM=false accelerate launch \
-    --config_file scripts/config_zero2_8gpu.yaml \
+    --config_file scripts/config_zero2_3gpu.yaml \
     --main_process_port ${PORT} -m rl.launcher \
     -f rl/configs/llama_gp_language.yaml \
     --output_dir=train_ckpt/gp_language/ \
@@ -36,3 +36,8 @@ DS_SKIP_CUDA_CHECK=1 TOKENIZERS_PARALLELISM=false accelerate launch \
     --model_path=${CKPT_NAME} \
     --save_ckpt=${save_model} \
     --save_every=${save_every}
+
+
+
+
+    # --config_file scripts/config_zero2_8gpu.yaml \

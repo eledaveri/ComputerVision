@@ -1,0 +1,41 @@
+compute_environment: LOCAL_MACHINE
+deepspeed_config:
+  train_batch_size: auto
+  train_micro_batch_size_per_gpu: auto
+  gradient_accumulation_steps: 1
+  fp16:
+    enabled: false
+  bf16:
+    enabled: true
+  gradient_clipping: 1.0
+  zero_optimization:
+    stage: 2
+    offload_optimizer_device: none
+    offload_param_device: none
+    overlap_comm: true
+    contiguous_gradients: true
+    reduce_bucket_size: 5e8
+    stage3_prefetch_bucket_size: auto
+    stage3_param_persistence_threshold: 100000
+    allgather_bucket_size: 5e8
+  scheduler:
+    type: WarmupLR
+    params:
+      warmup_min_lr: 0
+      warmup_max_lr: auto
+      warmup_num_steps: 100
+  steps_per_print: 100
+  wall_clock_breakdown: true
+distributed_type: DEEPSPEED
+downcast_bf16: 'yes'
+machine_rank: 0
+main_training_function: main
+mixed_precision: bf16
+num_machines: 1
+num_processes: 3  # Modificato per riflettere le 3 GPU disponibili
+rdzv_backend: static
+same_network: true
+tpu_env: []
+tpu_use_cluster: false
+tpu_use_sudo: false
+use_cpu: false

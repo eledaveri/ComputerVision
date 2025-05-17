@@ -16,6 +16,24 @@ from transformers import TrainerCallback
 from typing import Dict, List
 import torch.distributed as dist
 
+# Stampare le GPU visibili
+visible_devices = torch.cuda.device_count()
+print(f"Number of visible GPUs: {visible_devices}")
+
+# Stampare informazioni su ciascuna GPU
+for i in range(visible_devices):
+    print(f"GPU {i}: {torch.cuda.get_device_name(i)}")
+    print(f"Memory Allocated: {torch.cuda.memory_allocated(i) / 1024**2:.2f} MB")
+    print(f"Memory Reserved: {torch.cuda.memory_reserved(i) / 1024**2:.2f} MB")
+
+# Stampare la GPU attualmente in uso
+if torch.cuda.is_available():
+    current_device = torch.cuda.current_device()
+    print(f"Current device: {current_device}")
+    print(f"Device name: {torch.cuda.get_device_name(current_device)}")
+else:
+    print("No GPU is currently available.")
+
 def rank0_print(*args):
     if local_rank == 0 or local_rank == '0' or local_rank is None:
         print(*args)
@@ -260,7 +278,6 @@ def train():
             torch.save(non_lora_state_dict, os.path.join(training_args.output_dir, "non_lora_state_dict.bin"))
     else:
         safe_save_model_for_hf_trainer(trainer, output_dir=training_args.output_dir)
-
 
 
 if __name__ == "__main__":

@@ -13,6 +13,7 @@
 #SBATCH --output=sft_%A_%a.err
 #SBATCH --partition=gpu
 export PYTHONPATH=src:$PYTHONPATH
+#export CUDA_VISIBLE_DEVICES=0,2   #DA rimuover sela gpu 1 torna libera! RIMUOVERE
 MODEL_NAME="HuggingFaceTB/SmolVLM-256M-Instruct"  # Changed from SmolVLM-256M-Instruct
 DATA_JSON="/home/mmencucci/SFTvsRL/SFTvsRL_DATA/SFT_Data/gp-l/data.json"
 IMAGE_FOLDER="./"

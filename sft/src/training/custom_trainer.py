@@ -4,7 +4,7 @@ from transformers.debug_utils import DebugOption
 from transformers.trainer_utils import (
     speed_metrics,
     is_torch_xla_available,
-
+    TrainOutput,
 )
 from transformers.utils import is_accelerate_available
 from transformers.trainer_pt_utils import (
@@ -12,7 +12,10 @@ from transformers.trainer_pt_utils import (
     nested_concat,
     nested_numpify,
     nested_truncate,
+    get_model_param_count,
+    reissue_pt_warnings,
 )
+
 from accelerate.utils import DistributedType
 import torch
 import torch.nn as nn
@@ -24,8 +27,9 @@ import functools
 import shutil
 from typing import Optional, Dict, Union, Any, List, Iterator
 from torch.utils.data import DataLoader
-from transformers.trainer_pt_utils import get_model_param_count
-from transformers.trainer_pt_utils import reissue_pt_warnings
+# from transformers.trainer_pt_utils import get_model_param_count
+# from transformers.trainer_pt_utils import reissue_pt_warnings
+# from transformers.trainer_utils import TrainOutput
 
 TRAINING_ARGS_NAME = "training_args.bin"
 TRAINER_STATE_NAME = "trainer_state.json"
@@ -454,7 +458,7 @@ class CustomTrainer(Trainer):
 
             self.control = self.callback_handler.on_epoch_end(args, self.state, self.control)
             self._maybe_log_save_evaluate(
-                tr_loss, grad_norm, model, trial, epoch, ignore_keys_for_eval, start_time, learning_rate=learning_rate
+                tr_loss, grad_norm, model, trial, epoch, ignore_keys_for_eval, start_time
             )
 
             if DebugOption.TPU_METRICS_DEBUG in self.args.debug:
