@@ -162,6 +162,9 @@ def train():
             attn_implementation="flash_attention_2" if not training_args.disable_flash_attn2 else "eager",
             **bnb_model_from_pretrained_args
         ).to(training_args.device)
+        for p in model.parameters():
+            p.requires_grad = True
+        print("[DEBUG] Forzato requires_grad=True su tutti i parametri del modello")
     except Exception as e:
         print(f"Failed to load as SmolVLM: {e}")
         print("Falling back to AutoModelForVision2Seq")
@@ -222,6 +225,12 @@ def train():
     else:
         model_to_configure = model
         configure_llm(model, training_args)
+        trainable = [n for n, p in model.named_parameters() if p.requires_grad]
+        print(f"[DEBUG] Trainable parameters: {len(trainable)}")
+        print("Examples:", trainable[:5])
+        assert len(trainable) > 0, "🚨 Nessun parametro addestrabile! Modello completamente frozen."
+    
+    
     
     if not training_args.vision_lora:
         configure_vision_tower(model_to_configure, training_args, compute_dtype, training_args.device)

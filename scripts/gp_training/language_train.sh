@@ -17,7 +17,7 @@ LR=1e-6
 save_every=1
 save_model=False # disable running saving. one checkpoint ~30GB
 
-CKPT_NAME="HuggingFaceTB/SmolVLM-256M-Instruct" # official init model: tianzhechu/GP-L-Init
+CKPT_NAME="/home/mmencucci/SFTvsRL/merged_models/gp_l_sft_merged" # official init model: tianzhechu/GP-L-Init
 PORT=$((RANDOM % 10000 + 1000))
 
 DS_SKIP_CUDA_CHECK=1 TOKENIZERS_PARALLELISM=false accelerate launch \
@@ -35,7 +35,7 @@ DS_SKIP_CUDA_CHECK=1 TOKENIZERS_PARALLELISM=false accelerate launch \
     --num_steps=256 \
     --model_path=${CKPT_NAME} \
     --save_ckpt=${save_model} \
-    --save_every=${save_every}
+    --save_every=${save_every} 
 
 
 

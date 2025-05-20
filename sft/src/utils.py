@@ -1,6 +1,6 @@
 from peft import PeftModel
 import torch
-from transformers import BitsAndBytesConfig, AutoModelForCausalLM, AutoProcessor, AutoConfig
+from transformers import BitsAndBytesConfig, AutoModelForCausalLM, AutoProcessor, AutoConfig, AutoModelForVision2Seq
 import warnings
 import os
 import json
@@ -36,15 +36,18 @@ def load_pretrained_model(model_path, model_base, model_name, load_8bit=False, l
         kwargs['_attn_implementation'] = 'flash_attention_2'
 
     if 'lora' in model_name.lower() and model_base is None:
+        print("LORA C'è")
         warnings.warn('There is `lora` in model name but no `model_base` is provided. If you are loading a LoRA model, please provide the `model_base` argument.')
     if 'lora' in model_name.lower() and model_base is not None:
+        print("LORA C'è e model_base c'è")
         lora_cfg_pretrained = AutoConfig.from_pretrained(model_path, trust_remote_code=True)
         if hasattr(lora_cfg_pretrained, 'quantization_config'):
             del lora_cfg_pretrained.quantization_config
 
         processor = AutoProcessor.from_pretrained(model_base, trust_remote_code=True)
-        print('Loading LLama3.2-Vision from base model...')
-        model = AutoModelForCausalLM.from_pretrained(model_base, low_cpu_mem_usage=True, config=lora_cfg_pretrained, trust_remote_code=True, **kwargs)
+        print('Loading Smol-256M from base model...')
+        model = AutoModelForVision2Seq.from_pretrained(model_base, low_cpu_mem_usage=True, config=lora_cfg_pretrained, trust_remote_code=True, **kwargs)
+        print('Loading Smol-256M from base model done.')
         token_num, tokem_dim = model.lm_head.out_features, model.lm_head.in_features
         if model.lm_head.weight.shape[0] != token_num:
             model.lm_head.weight = torch.nn.Parameter(torch.empty(token_num, tokem_dim, device=model.device, dtype=model.dtype))
@@ -67,8 +70,9 @@ def load_pretrained_model(model_path, model_base, model_name, load_8bit=False, l
         print('Model Loaded!!!')
     
     else:
+        print("LORA NON C'è")
         processor = AutoProcessor.from_pretrained(model_path, trust_remote_code=True)
-        model = AutoModelForCausalLM.from_pretrained(model_path, low_cpu_mem_usage=True, trust_remote_code=True, **kwargs)
+        model = AutoModelForVision2Seq.from_pretrained(model_path, low_cpu_mem_usage=True, trust_remote_code=True, **kwargs)
 
     return processor, model
 

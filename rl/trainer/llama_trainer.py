@@ -19,6 +19,7 @@ from utils_general import progress_bar, re_match
 import os
 
 from PIL import Image
+print("[DEBUGGONE] llama_trainer.py")
 
 class LlamaTrainer(BaseTrainer):
     def __init__(self, 
@@ -36,6 +37,7 @@ class LlamaTrainer(BaseTrainer):
     
     
     def init_model_optimizer_algo(self, model, model_path, ppo_config, optimizer_config):
+        print("[DEBUGGONE in llama_trainer.py] init_model_optimizer_algo")
         self.processor, self.model = evaluate_model_config(model, model_path)
         
         # this is a naive value model containing base model + linear layer
@@ -43,12 +45,35 @@ class LlamaTrainer(BaseTrainer):
         actor_critic: nn.Module = VLMPolicy(tokenizer = self.processor,
                                 value_model = value_model, 
                                 generation_config = self.generation_config)
+        print("[DEBUG] Lista parametri con requires_grad status:")
+        for name, param in actor_critic.named_parameters():
+            print(f"  {name} | requires_grad={param.requires_grad}", flush=True)
+        for name, param in actor_critic.named_parameters():
+            if 'value_model.value_head' in name:
+                param.requires_grad = True
+                print(f"[DEBUGGONE] Enabling trainable param: {name}")
+        print(f"[DEBUGGONE in llama_trainer.py] dopo il for")
+        trainable_params = [p for p in actor_critic.parameters() if p.requires_grad]
+        print(f"[DEBUGGONE in llama_trainer.py] siamo dopo trainable_params")
+        print(f"[DEBUGGONE in llama_trainer.py] actor_critic trainable params: {len(trainable_params)}")
+        if len(trainable_params) == 0:
+            raise ValueError("OPS: No trainable parameters found in actor_critic")
+        print(f"[DEBUGGONE in llama_trainer.py] actor_critic trainable params: {len(trainable_params)}")
+        optimizer = optim.AdamW(trainable_params, lr=optimizer_config.init_lr, eps=optimizer_config.eps, weight_decay=optimizer_config.weight_decay)
 
-        optimizer = optim.Adam(actor_critic.value_model.parameters(), lr=optimizer_config.init_lr, eps=optimizer_config.eps, weight_decay=optimizer_config.weight_decay)
+        #optimizer = optim.Adam(actor_critic.value_model.parameters(), lr=optimizer_config.init_lr, eps=optimizer_config.eps, weight_decay=optimizer_config.weight_decay)
         lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=optimizer_config.lr_max_steps, eta_min=optimizer_config.end_lr)
         
         AcceleratorState().deepspeed_plugin.deepspeed_config['train_micro_batch_size_per_gpu'] = 1
-        self.actor_critic, self.optimizer, self.lr_scheduler = self.accelerator.prepare(actor_critic, optimizer, lr_scheduler)
+        print("[DEBUGGONE] actor_critic param groups:", list(actor_critic.named_parameters())[:5])
+        print("[DEBUGGONE] optimizer param groups:", optimizer.param_groups)
+        for i, group in enumerate(optimizer.param_groups):
+            print(f"[DEBUGGONE] Group {i}: {len(group['params'])} parameters")
+        #evitiamo di usare deepspeed per la gestione dell'ottimizzazione
+        #self.actor_critic, self.optimizer, self.lr_scheduler = self.accelerator.prepare(actor_critic, optimizer, lr_scheduler)
+        self.actor_critic = actor_critic
+        self.optimizer = optimizer
+        self.lr_scheduler = lr_scheduler
         self.agent = algo.PPO(
             self.actor_critic,
             self.optimizer,
