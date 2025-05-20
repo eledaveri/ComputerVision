@@ -31,3 +31,4 @@ start_project.sh
 sft/sft_scripts/gp_l.sh
 sft/sft_scripts/gp_l.sh
 merged_models/gp_l_sft_merged/adapter_model.safetensors
+merged_models/gp_l_sft_merged/adapter_model.safetensors
