@@ -17,6 +17,7 @@ from transformers.trainer_pt_utils import (
 )
 #prova
 #àprova
+#prova2
 from accelerate.utils import DistributedType
 import torch
 import torch.nn as nn
