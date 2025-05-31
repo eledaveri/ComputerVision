@@ -8,36 +8,72 @@ class Flatten(nn.Module):
         return x.view(x.size(0), -1)
 
 
+# class VLMValue(nn.Module):
+#     """
+#     actually the base is also used for generation!
+#     """
+#     def __init__(self, base):
+#         super(VLMValue, self).__init__()
+#         self.base = base
+        
+#         # Create a value head that adapts to whatever hidden size the model actually has
+#         self.check_and_create_value_head()
+        
+#     def check_and_create_value_head(self):
+#         """Create a value head that adapts to the actual hidden size of the model."""
+#         # We'll determine the hidden size dynamically when the first forward pass happens
+#         self.value_head_initialized = False
+
+#     def forward(self, inputs):
+#         """
+#         Differ from RL4VLM codebase
+#         to adjust to cambrian
+#         """
+#         outputs = self.base(
+#             **inputs,
+#             output_hidden_states=True)
+#         hidden_states = outputs.hidden_states[-1][:, -1]  # Use the last token of the last layer
+        
+#         # Initialize the value head if needed based on actual hidden size
+#         if not self.value_head_initialized:
+#             hidden_size = hidden_states.shape[-1]
+#             print(f"Initializing value head with hidden size: {hidden_size}")
+#             self.value_head = nn.Sequential(
+#                 nn.Linear(hidden_size, 1024),
+#                 nn.ReLU(),
+#                 nn.Linear(1024, 512),
+#                 nn.ReLU(),
+#                 nn.Linear(512, 1)
+#             ).to(self.base.device, dtype=torch.bfloat16)
+#             self.value_head_initialized = True
+            
+#         values = self.value_head(hidden_states)
+#         return values
+
 class VLMValue(nn.Module):
     """
-    actually the base is also used for generation!
+    Value model che aggiunge una testa di regressione a un modello base multimodale.
+    Inizializza dinamicamente la value_head dopo il primo forward.
     """
     def __init__(self, base):
         super(VLMValue, self).__init__()
         self.base = base
-        
-        # Create a value head that adapts to whatever hidden size the model actually has
-        self.check_and_create_value_head()
-        
-    def check_and_create_value_head(self):
-        """Create a value head that adapts to the actual hidden size of the model."""
-        # We'll determine the hidden size dynamically when the first forward pass happens
         self.value_head_initialized = False
+        self.value_head = None
 
     def forward(self, inputs):
-        """
-        Differ from RL4VLM codebase
-        to adjust to cambrian
-        """
+        # Ottiene le hidden states dall'ultimo layer
         outputs = self.base(
             **inputs,
-            output_hidden_states=True)
-        hidden_states = outputs.hidden_states[-1][:, -1]  # Use the last token of the last layer
-        
-        # Initialize the value head if needed based on actual hidden size
+            output_hidden_states=True
+        )
+        hidden_states = outputs.hidden_states[-1][:, -1]  # Shape: (batch_size, hidden_size)
+        hidden_states = hidden_states.to(torch.bfloat16)
+
+        # Inizializza value_head dinamicamente
         if not self.value_head_initialized:
             hidden_size = hidden_states.shape[-1]
-            print(f"Initializing value head with hidden size: {hidden_size}")
+            print(f"[DEBUG] Dinamicamente inizializzo value_head con hidden_size={hidden_size}")
             self.value_head = nn.Sequential(
                 nn.Linear(hidden_size, 1024),
                 nn.ReLU(),
@@ -46,7 +82,7 @@ class VLMValue(nn.Module):
                 nn.Linear(512, 1)
             ).to(self.base.device, dtype=torch.bfloat16)
             self.value_head_initialized = True
-            
+
         values = self.value_head(hidden_states)
         return values
 

@@ -42,12 +42,18 @@ class LlamaTrainer(BaseTrainer):
         
         # this is a naive value model containing base model + linear layer
         value_model: nn.Module = VLMValue(self.model)
+        dummy_inputs = {
+            "input_ids": torch.ones((1, 5), dtype=torch.long).to(self.model.device)
+        }
+        _ = value_model(dummy_inputs)
         actor_critic: nn.Module = VLMPolicy(tokenizer = self.processor,
                                 value_model = value_model, 
                                 generation_config = self.generation_config)
-        print("[DEBUG] Lista parametri con requires_grad status:")
-        for name, param in actor_critic.named_parameters():
-            print(f"  {name} | requires_grad={param.requires_grad}", flush=True)
+        print("[DEBUG] Dtype primo layer:", next(self.model.parameters()).dtype)
+        print("[DEBUG] Dtype value_head:", next(value_model.value_head.parameters()).dtype)
+        # print("[DEBUG] Lista parametri con requires_grad status:")
+        # for name, param in actor_critic.named_parameters():
+        #     print(f"  {name} | requires_grad={param.requires_grad}", flush=True)
         for name, param in actor_critic.named_parameters():
             if 'value_model.value_head' in name:
                 param.requires_grad = True
@@ -69,11 +75,10 @@ class LlamaTrainer(BaseTrainer):
         print("[DEBUGGONE] optimizer param groups:", optimizer.param_groups)
         for i, group in enumerate(optimizer.param_groups):
             print(f"[DEBUGGONE] Group {i}: {len(group['params'])} parameters")
-        #evitiamo di usare deepspeed per la gestione dell'ottimizzazione
-        #self.actor_critic, self.optimizer, self.lr_scheduler = self.accelerator.prepare(actor_critic, optimizer, lr_scheduler)
-        self.actor_critic = actor_critic
-        self.optimizer = optimizer
-        self.lr_scheduler = lr_scheduler
+        self.actor_critic, self.optimizer, self.lr_scheduler = self.accelerator.prepare(actor_critic, optimizer, lr_scheduler)
+        # self.actor_critic = actor_critic
+        # self.optimizer = optimizer
+        # self.lr_scheduler = lr_scheduler
         self.agent = algo.PPO(
             self.actor_critic,
             self.optimizer,

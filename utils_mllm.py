@@ -18,7 +18,7 @@ def evaluate_model_config(model, model_path, device="cuda"):
             model = AutoModelForVision2Seq.from_pretrained(
                 model_path,
                 trust_remote_code=True,  # Importante per SmolVLM
-                torch_dtype=torch.float32,  # Puoi adattare il tipo di dato se necessario
+                torch_dtype=torch.bfloat16,  # Puoi adattare il tipo di dato se necessario
             )
             print(f"Successfully loaded SmolVLM model from {model_path}")
         except Exception as e:
