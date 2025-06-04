@@ -27,6 +27,38 @@ You are an expert {target_number} points card game player. You will receive a se
 Note that {face_card_msg}, and each card must be used once.
 Your goal is to output a formula that evaluates to {target_number} using numbers from the cards and operators such as '+', '-', '*', '/', '(', ')', and '='.
 
+Below are some examples of correct behavior:
+
+[Input]
+Cards: ['6', '6', '6', '6']
+
+[Output]
+{{
+  "cards": ['6', '6', '6', '6'],
+  "number": [6, 6, 6, 6],
+  "formula": "6 + 6 + 6 + 6 = 24"
+}}
+
+[Input]
+Cards: ['A', '4', '5', '3']
+
+[Output]
+{{
+  "cards": ['A', '4', '5', '3'],
+  "number": [1, 4, 5, 3],
+  "formula": "(5 + 3) * (4 - 1) = 24"
+}}
+
+[Input]
+Cards: ['J', 'Q', 'K', '6']
+
+[Output]
+{{
+  "cards": ['J', 'Q', 'K', '6'],
+  "number": [10, 10, 10, 6],
+  "formula": "(10 + 10 + 10 - 6) = 24"
+}}
+
 [Input]
 Cards: {cards}
 

@@ -17,6 +17,7 @@ from accelerate.state import AcceleratorState
 from utils_mllm import evaluate_model_config
 from utils_general import progress_bar, re_match
 import os
+from transformers import AutoTokenizer
 
 from PIL import Image
 print("[DEBUGGONE] llama_trainer.py")
@@ -169,6 +170,15 @@ class LlamaTrainer(BaseTrainer):
                 print("Action tokens log prob: ")
                 print(action_tokens_log_prob)
             obs, reward, done, truncated, info = self.env.step(output_text)
+            if (
+                output_text is None or
+                len(output_text) > 500 or
+                any(c in output_text for c in ['{', '[', '}', ']', '\\']) or
+                "formula" not in output_text or
+                "=" not in output_text
+            ):
+                print("[DEBUG] Penalità applicata per formula malformata o degenerata")
+                reward -= 1.0  # puoi regolare l’intensità a piacere
             # print(info["Verify Info"])
             running_reward += reward
             self.rollouts.insert({"image": obs, "io_dict": io_dict}, None, torch.tensor([0]), action_log_prob, values.squeeze(), reward, torch.Tensor([1-done]), torch.Tensor([1-truncated]))
