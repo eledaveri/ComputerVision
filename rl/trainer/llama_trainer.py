@@ -157,7 +157,7 @@ class LlamaTrainer(BaseTrainer):
                 next_values = values
                 self.rollouts.obs[-1]['io_dict'] = io_dict
                 break
-            if step == self.num_steps - 1:
+            if step % 10 == 0 or step == self.num_steps - 1:
                 print("Running example")
                 print("Input: ")
                 print(input_text)
@@ -172,8 +172,7 @@ class LlamaTrainer(BaseTrainer):
             obs, reward, done, truncated, info = self.env.step(output_text)
             if (
                 output_text is None or
-                len(output_text) > 500 or
-                any(c in output_text for c in ['{', '[', '}', ']', '\\']) or
+                len(output_text) > 400 or
                 "formula" not in output_text or
                 "=" not in output_text
             ):

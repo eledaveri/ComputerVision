@@ -23,21 +23,28 @@ Your response should be a valid json file in the following format:
 
 Q_GeneralPoint_EQN_L = """
 [Task Description]
-You are an expert {target_number} points card game player. You will receive a set of 4 cards.
-Note that {face_card_msg}, and each card must be used once.
-Your goal is to output a formula that evaluates to {target_number} using numbers from the cards and operators such as '+', '-', '*', '/', '(', ')', and '='.
+You are an expert player of the 24-point card game. You will receive a set of 4 playing cards.
 
-Below are some examples of correct behavior:
+Your task is to output a valid formula that evaluates exactly to 24, using the card values and the standard arithmetic operators.
 
-[Input]
-Cards: ['6', '6', '6', '6']
+Rules:
+- Use **each card exactly once**.
+- Face cards ('J', 'Q', 'K') count as 10.
+- 'A' counts as 1.
+- Valid operators: +, -, *, /, (, )
+- Always include the final result using `= 24`.
 
-[Output]
+Output format:
+Respond with JSON only. No explanations.
+
+```json
 {{
-  "cards": ['6', '6', '6', '6'],
-  "number": [6, 6, 6, 6],
-  "formula": "6 + 6 + 6 + 6 = 24"
+  "cards": [...],      // original cards as strings
+  "number": [...],     // numeric values used in calculation
+  "formula": "..."     // a valid expression that evaluates to 24
 }}
+
+Examples:
 
 [Input]
 Cards: ['A', '4', '5', '3']
@@ -47,6 +54,16 @@ Cards: ['A', '4', '5', '3']
   "cards": ['A', '4', '5', '3'],
   "number": [1, 4, 5, 3],
   "formula": "(5 + 3) * (4 - 1) = 24"
+}}
+
+[Input]
+Cards: ['6', '6', '6', '6']
+
+[Output]
+{{
+  "cards": ['6', '6', '6', '6'],
+  "number": [6, 6, 6, 6],
+  "formula": "6 + 6 + 6 + 6 = 24"
 }}
 
 [Input]
@@ -64,16 +81,9 @@ Cards: {cards}
 
 [Output]
 {{
-  "cards": [x, y, z, w], where {face_card_msg},
-  "number": [a, b, c, d], where a, b, c, and d are the numbers on the cards,
-  "formula": 'an equation that equals {target_number}',
-}}
-
+  "cards":
 """
 
-"""
-    *** Responses templates ***
-"""
 
 ResponseEqn = """
 {{

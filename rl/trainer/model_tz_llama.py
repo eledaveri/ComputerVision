@@ -113,7 +113,15 @@ class VLMPolicy(nn.Module):
         self.token_cnt += inputs['input_ids'].shape[1]
         with torch.no_grad():
             outputs = self.base.generate(
-            **inputs, max_new_tokens=self.max_new_tokens, temperature=self.temperature, 
+            **inputs, 
+            # max_new_tokens=self.max_new_tokens, 
+            # temperature=self.temperature,
+            max_new_tokens=64,
+            temperature=0.7,
+            do_sample=True,
+            top_p=0.9,
+            top_k=40,
+            repetition_penalty=1.2, 
             output_scores=True,
             output_hidden_states=True,
             return_dict_in_generate=True,

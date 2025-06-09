@@ -32,3 +32,13 @@ sft/sft_scripts/gp_l.sh
 sft/sft_scripts/gp_l.sh
 merged_models/gp_l_sft_merged/adapter_model.safetensors
 merged_models/gp_l_sft_merged/adapter_model.safetensors
+rl/configs/llama_gp_language.yaml
+.gitignore
+.gitignore
+.gitignore
+merged_models/gp_l_sft_merged_500M/adapter_model.safetensors
+merged_models/gp_l_sft_merged_500M/merges.txt
+.gitignore
+.gitignore
+merged_models_old/gp_l_sft_merged_old/merges.txt
+.gitignore

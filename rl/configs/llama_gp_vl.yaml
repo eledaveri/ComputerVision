@@ -22,7 +22,7 @@ compute_return_kwargs:
   use_proper_time_limits: False
 report_to: wandb
 run_name: "gp_vl"
-num_steps: 256
+num_steps: 64
 num_processes: 1
 num_updates: 20
 env_config:
@@ -34,7 +34,7 @@ env_config:
   verify_iter: 5
 
 model: SmolVLM      #llama
-model_path: "HuggingFaceTB/SmolVLM-256M-Instruct"
+model_path: "HuggingFaceTB/SmolVLM-500M-Instruct"
 prompt_config:
   use_vision: true  #questi 2 campi servono per attivare visione e/o linguaggio (modello multimodale)
   use_language: false

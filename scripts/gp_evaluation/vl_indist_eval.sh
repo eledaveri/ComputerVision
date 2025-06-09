@@ -26,7 +26,7 @@ TARGET=24
 COLOR=black
 
 NUM_TRAJ=234
-CKPT_NAME="HuggingFaceTB/SmolVLM-256M-Instruct"
+CKPT_NAME="HuggingFaceTB/SmolVLM-500M-Instruct"
 OUTPUT_FOLDER="logs/gp_vl_indist_verify_${VITER}_target_${TARGET}"
 PORT=$((RANDOM % 10000 + 1000))
 

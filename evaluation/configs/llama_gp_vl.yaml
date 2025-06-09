@@ -12,7 +12,7 @@ env_config:
   ood: false
 
 model: SmolVLM # o1-mini # edit this line to adjust prima c'era "llama"
-model_path: "HuggingFaceTB/SmolVLM-256M-Instruct"
+model_path: "HuggingFaceTB/SmolVLM-500M-Instruct"
 prompt_config:
   use_vision: true
   use_language: false

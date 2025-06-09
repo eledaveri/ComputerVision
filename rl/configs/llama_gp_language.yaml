@@ -1,6 +1,6 @@
 trainer: LlamaTrainer
 
-grad_accum_steps: 128
+grad_accum_steps: 32
 
 optimizer_config:
   init_lr: !!float 1e-6
@@ -22,7 +22,7 @@ compute_return_kwargs:
   use_proper_time_limits: False
 report_to: wandb
 run_name: "gp_l"
-num_steps: 256
+num_steps: 64
 num_processes: 1
 num_updates: 20
 env_config:
@@ -33,7 +33,7 @@ env_config:
   verify_iter: 5
 
 model: SmolVLM
-model_path: "HuggingFaceTB/SmolVLM-256M-Instruct"
+model_path: "HuggingFaceTB/SmolVLM-500M-Instruct"
 prompt_config:
   use_language: true
   use_vision: false

@@ -17,7 +17,7 @@ LR=1e-6
 save_every=1
 save_model=False # disable running saving. one checkpoint ~30GB
 
-CKPT_NAME="/home/mmencucci/SFTvsRL/merged_models/gp_l_sft_merged" # official init model: tianzhechu/GP-L-Init
+CKPT_NAME="/home/mmencucci/SFTvsRL/merged_models/gp_l_sft_merged_500M" # official init model: tianzhechu/GP-L-Init
 PORT=$((RANDOM % 10000 + 1000))
 
 DS_SKIP_CUDA_CHECK=1 TOKENIZERS_PARALLELISM=false accelerate launch \
@@ -32,7 +32,7 @@ DS_SKIP_CUDA_CHECK=1 TOKENIZERS_PARALLELISM=false accelerate launch \
     --env_config.treat_face_cards_as_10=True\
     --env_config.target_points=24 \
     --run_name=gp_language_training \
-    --num_steps=256 \
+    --num_steps=64 \
     --model_path=${CKPT_NAME} \
     --save_ckpt=${save_model} \
     --save_every=${save_every} 

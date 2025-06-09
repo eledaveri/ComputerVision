@@ -20,7 +20,7 @@ ENABLE=True
 # use absolute action space, consistent with training
 ABS=True
 NUM_TRAJ=48
-CKPT_NAME="HuggingFaceTB/SmolVLM-256M-Instruct"
+CKPT_NAME="HuggingFaceTB/SmolVLM-500M-Instruct"
 OUTPUT_FOLDER="logs/virl_l_indist_verify_${VITER}"
 PORT=$((RANDOM % 10000 + 2000))
 
